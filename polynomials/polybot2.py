@@ -13,6 +13,128 @@ class Expression:
     if prompt:
       self.get_next_step()
 
+  @staticmethod
+  def add_polys(poly1, poly2):
+    new_poly = poly1.copy()
+    for d, c in poly2.items():
+      if d in new_poly:
+        new_poly[d] += c
+      else:
+        new_poly[d] = c
+    return new_poly
+
+  @staticmethod
+  def sub_polys(poly1, poly2):
+    new_poly = poly1.copy()
+    for d, c in poly2.items():
+      if d in new_poly:
+        new_poly[d] -= c
+      else:
+        new_poly[d] = -c
+    return new_poly
+
+  @staticmethod
+  def mul_polys(poly1, poly2):
+    new_poly = {}
+    for d1, c1 in poly1.items():
+      for d2, c2 in poly2.items():
+        d = d1 + d2
+        c = c1 * c2
+        if d in new_poly:
+          new_poly[d] += c
+        else:
+          new_poly[d] = c
+    return new_poly
+
+  @staticmethod
+  def evaluate_expression(expr):
+    expr = expr.replace(' ', '')
+    tokens = Expression.tokenize(expr)
+    pos = [0]  # use list to modify in nested functions
+    poly = Expression.parse_expression(tokens, pos)
+    if pos[0] != len(tokens):
+      raise ValueError("Extra tokens in expression")
+    return poly
+
+  @staticmethod
+  def tokenize(expr):
+    tokens = []
+    i = 0
+    while i < len(expr):
+      if expr[i].isdigit() or (expr[i] == '-' and (i == 0 or expr[i-1] in '+-*/(')):
+        num = ''
+        start = i
+        if expr[i] == '-':
+          num += '-'
+          i += 1
+        while i < len(expr) and expr[i].isdigit():
+          num += expr[i]
+          i += 1
+        tokens.append(('NUM', int(num)))
+      elif expr[i] == 'x':
+        tokens.append(('VAR', 'x'))
+        i += 1
+      elif expr[i] in '+-*/^()':
+        tokens.append(('OP', expr[i]))
+        i += 1
+      else:
+        raise ValueError(f"Invalid character '{expr[i]}' in expression")
+    return tokens
+
+  @staticmethod
+  def parse_expression(tokens, pos):
+    result = Expression.parse_term(tokens, pos)
+    while pos[0] < len(tokens) and tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] in '+-':
+      op = tokens[pos[0]][1]
+      pos[0] += 1
+      right = Expression.parse_term(tokens, pos)
+      if op == '+':
+        result = Expression.add_polys(result, right)
+      else:
+        result = Expression.sub_polys(result, right)
+    return result
+
+  @staticmethod
+  def parse_term(tokens, pos):
+    result = Expression.parse_factor(tokens, pos)
+    while pos[0] < len(tokens) and tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] in '*/':
+      op = tokens[pos[0]][1]
+      pos[0] += 1
+      right = Expression.parse_factor(tokens, pos)
+      if op == '*':
+        result = Expression.mul_polys(result, right)
+      else:
+        raise ValueError("Division not supported yet")
+    return result
+
+  @staticmethod
+  def parse_factor(tokens, pos):
+    if tokens[pos[0]][0] == 'NUM':
+      num = tokens[pos[0]][1]
+      pos[0] += 1
+      return {0: num}
+    elif tokens[pos[0]][0] == 'VAR':
+      pos[0] += 1
+      deg = 1
+      if pos[0] < len(tokens) and tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] == '^':
+        pos[0] += 1
+        if tokens[pos[0]][0] == 'NUM':
+          deg = tokens[pos[0]][1]
+          pos[0] += 1
+        else:
+          raise ValueError("Expected number after ^")
+      return {deg: 1}
+    elif tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] == '(':
+      pos[0] += 1
+      result = Expression.parse_expression(tokens, pos)
+      if pos[0] < len(tokens) and tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] == ')':
+        pos[0] += 1
+      else:
+        raise ValueError("Expected )")
+      return result
+    else:
+      raise ValueError("Invalid factor")
+
   def break_up_input(self,input_string):
     input_string = input_string.replace(' ', '')
     input_string = input_string.replace('(', '').replace(')', '')
@@ -25,26 +147,31 @@ class Expression:
     return terms
     
   def validate(self):
-    if '*' in self.expression or '/' in self.expression:
-      return  # Skip validation for combined expressions with multiplication or division
+    if '*' in self.expression or '/' in self.expression or '(' in self.expression or ')' in self.expression:
+      return  # Skip validation for combined expressions
     for term in self.terms:
-      if not re.match(r'^[+-]?\d*x*$', term):
+      if not re.match(r'^[+-]?(\d*x(\^\d+)?|\d+)$', term):
         raise ValueError(f"Invalid term '{term}' in expression '{self.expression}'. Expression must be a valid polynomial (e.g., 3x + 2, x^2 - 1).")
     
   def get_poly(self):
-    if '*' in self.expression or '/' in self.expression:
-      raise ValueError("Cannot extract polynomial from combined expression")
+    if '*' in self.expression or '/' in self.expression or '(' in self.expression or ')' in self.expression:
+      return Expression.evaluate_expression(self.expression)
     poly = {}
     for term in self.terms:
       if 'x' in term:
-        coeff_str = term.replace('x', '')
+        if '^' in term:
+          parts = term.split('^')
+          coeff_str = parts[0].replace('x', '')
+          degree = int(parts[1])
+        else:
+          coeff_str = term.replace('x', '')
+          degree = term.count('x')
         if coeff_str == '' or coeff_str == '+':
           coeff = 1
         elif coeff_str == '-':
           coeff = -1
         else:
           coeff = int(coeff_str)
-        degree = term.count('x')
       else:
         coeff = int(term)
         degree = 0
@@ -64,7 +191,10 @@ class Expression:
       if d == 0:
         terms.append(str(c))
       else:
-        x_part = 'x' * d
+        if d == 1:
+          x_part = 'x'
+        else:
+          x_part = f'x^{d}'
         if c == 1:
           terms.append(x_part)
         elif c == -1:
@@ -105,67 +235,45 @@ class Expression:
       return []
   def __add__(self, other):
     if isinstance(other, Expression):
+      combined_expr = f'({self.expression})+({other.expression})'
       try:
-        poly1 = self.get_poly()
-        poly2 = other.get_poly()
-        new_poly = poly1.copy()
-        for d, c in poly2.items():
-          if d in new_poly:
-            new_poly[d] += c
-          else:
-            new_poly[d] = c
-        new_expression = Expression.poly_to_expr(new_poly)
-        return Expression(new_expression, prompt=False)
-      except ValueError:
-        # Fallback to string combination
-        new_expression = f'({self.expression}) + ({other.expression})'
-        return Expression(new_expression, prompt=False)
+        combined_poly = Expression.evaluate_expression(combined_expr)
+        new_expression = Expression.poly_to_expr(combined_poly)
+      except:
+        new_expression = combined_expr
+      return Expression(new_expression, prompt=False)
     else:
       raise ValueError("Can only add another Expression object.")
   def __sub__(self, other):
     if isinstance(other, Expression):
+      combined_expr = f'({self.expression})-({other.expression})'
       try:
-        poly1 = self.get_poly()
-        poly2 = other.get_poly()
-        new_poly = poly1.copy()
-        for d, c in poly2.items():
-          if d in new_poly:
-            new_poly[d] -= c
-          else:
-            new_poly[d] = -c
-        new_expression = Expression.poly_to_expr(new_poly)
-        return Expression(new_expression, prompt=False)
-      except ValueError:
-        # Fallback to string combination
-        new_expression = f'({self.expression}) - ({other.expression})'
-        return Expression(new_expression, prompt=False)
+        combined_poly = Expression.evaluate_expression(combined_expr)
+        new_expression = Expression.poly_to_expr(combined_poly)
+      except:
+        new_expression = combined_expr
+      return Expression(new_expression, prompt=False)
     else:
       raise ValueError("Can only subtract another Expression object.")
   def __mul__(self, other):
     if isinstance(other, Expression):
+      combined_expr = f'({self.expression})*({other.expression})'
       try:
-        poly1 = self.get_poly()
-        poly2 = other.get_poly()
-        new_poly = {}
-        for d1, c1 in poly1.items():
-          for d2, c2 in poly2.items():
-            d = d1 + d2
-            c = c1 * c2
-            if d in new_poly:
-              new_poly[d] += c
-            else:
-              new_poly[d] = c
-        new_expression = Expression.poly_to_expr(new_poly)
-        return Expression(new_expression, prompt=False)
-      except ValueError:
-        # Fallback to string combination
-        new_expression = f'({self.expression}) * ({other.expression})'
-        return Expression(new_expression, prompt=False)
+        combined_poly = Expression.evaluate_expression(combined_expr)
+        new_expression = Expression.poly_to_expr(combined_poly)
+      except:
+        new_expression = combined_expr
+      return Expression(new_expression, prompt=False)
     else:
       raise ValueError("Can only multiply by another Expression object.")
   def __truediv__(self, other):
     if isinstance(other, Expression):
-      new_expression = f'({self.expression}) / ({other.expression})'
+      combined_expr = f'({self.expression})/({other.expression})'
+      try:
+        combined_poly = Expression.evaluate_expression(combined_expr)
+        new_expression = Expression.poly_to_expr(combined_poly)
+      except:
+        new_expression = combined_expr
       return Expression(new_expression, prompt=False)
     else:
       raise ValueError("Can only divide by another Expression object.")
@@ -209,5 +317,6 @@ class Expression:
       print('Invalid choice. Please try again.')
       return self.get_next_step()
 
-math=Expression()
+if __name__ == '__main__':
+    math=Expression()
 
