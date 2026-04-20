@@ -6,9 +6,44 @@ class Expression:
   def __init__(self, expression=None, prompt=True):
     if expression is None:
       expression = input('Enter the expression: \n>')
-    self.terms = self.break_up_input(expression)
     self.expression = expression
-    self.validate()
+    self.terms = self.break_up_input(expression)
+    self.combined = any(op in self.expression for op in '*/()')
+    if not self.combined:
+      self.validate()
+      poly = {}
+      for term in self.terms:
+        if 'x' in term:
+          if '^' in term:
+            parts = term.split('^')
+            coeff_str = parts[0].replace('x', '')
+            degree = int(parts[1])
+          else:
+            coeff_str = term.replace('x', '')
+            degree = term.count('x')
+          if coeff_str == '' or coeff_str == '+':
+            coeff = 1.0
+          elif coeff_str == '-':
+            coeff = -1.0
+          else:
+            coeff = float(coeff_str)
+        else:
+          coeff = float(term)
+          degree = 0
+        if degree in poly:
+          poly[degree] += coeff
+        else:
+          poly[degree] = coeff
+      self.poly = poly
+    else:
+      try:
+        result = Expression.evaluate_expression(self.expression)
+        if isinstance(result, dict):
+          self.poly = result
+        else:
+          self.poly = None
+      except:
+        self.poly = None
 
     if prompt:
       self.get_next_step()
@@ -47,6 +82,43 @@ class Expression:
     return new_poly
 
   @staticmethod
+  def div_polys(poly1, poly2):
+    if not poly2:
+      raise ValueError("Division by zero")
+    quotient = {}
+    remainder = poly1.copy()
+    while remainder:
+      deg_r = max(remainder.keys())
+      deg_d = max(poly2.keys())
+      if deg_r < deg_d:
+        break
+      coeff_r = remainder[deg_r]
+      coeff_d = poly2[deg_d]
+      q_coeff = coeff_r / coeff_d
+      q_deg = deg_r - deg_d
+      quotient[q_deg] = q_coeff
+      # subtract q * divisor shifted
+      for d, c in poly2.items():
+        deg = d + q_deg
+        coeff = q_coeff * c
+        if deg in remainder:
+          remainder[deg] -= coeff
+          if abs(remainder[deg]) < 1e-10:
+            del remainder[deg]
+        else:
+          remainder[deg] = -coeff
+          if abs(remainder[deg]) < 1e-10:
+            del remainder[deg]
+    return quotient, remainder
+
+  @staticmethod
+  def gcd_polys(a, b):
+    while b:
+      q, r = Expression.div_polys(a, b)
+      a, b = b, r
+    return a
+
+  @staticmethod
   def evaluate_expression(expr):
     expr = expr.replace(' ', '')
     tokens = Expression.tokenize(expr)
@@ -63,7 +135,6 @@ class Expression:
     while i < len(expr):
       if expr[i].isdigit() or (expr[i] == '-' and (i == 0 or expr[i-1] in '+-*/(')):
         num = ''
-        start = i
         if expr[i] == '-':
           num += '-'
           i += 1
@@ -71,12 +142,21 @@ class Expression:
           num += expr[i]
           i += 1
         tokens.append(('NUM', int(num)))
+        # Check for implicit *
+        if i < len(expr) and expr[i] in '0123456789x(':
+          tokens.append(('OP', '*'))
       elif expr[i] == 'x':
         tokens.append(('VAR', 'x'))
         i += 1
+        # Check for implicit *
+        if i < len(expr) and expr[i] in '0123456789x(':
+          tokens.append(('OP', '*'))
       elif expr[i] in '+-*/^()':
         tokens.append(('OP', expr[i]))
         i += 1
+        # After ), check for implicit *
+        if expr[i-1] == ')' and i < len(expr) and expr[i] in '0123456789x(':
+          tokens.append(('OP', '*'))
       else:
         raise ValueError(f"Invalid character '{expr[i]}' in expression")
     return tokens
@@ -104,7 +184,11 @@ class Expression:
       if op == '*':
         result = Expression.mul_polys(result, right)
       else:
-        raise ValueError("Division not supported yet")
+        q, r = Expression.div_polys(result, right)
+        if not r:
+          result = q
+        else:
+          raise ValueError("Non-exact division")
     return result
 
   @staticmethod
@@ -112,7 +196,7 @@ class Expression:
     if tokens[pos[0]][0] == 'NUM':
       num = tokens[pos[0]][1]
       pos[0] += 1
-      return {0: num}
+      return {0: float(num)}
     elif tokens[pos[0]][0] == 'VAR':
       pos[0] += 1
       deg = 1
@@ -123,7 +207,7 @@ class Expression:
           pos[0] += 1
         else:
           raise ValueError("Expected number after ^")
-      return {deg: 1}
+      return {deg: 1.0}
     elif tokens[pos[0]][0] == 'OP' and tokens[pos[0]][1] == '(':
       pos[0] += 1
       result = Expression.parse_expression(tokens, pos)
@@ -147,47 +231,26 @@ class Expression:
     return terms
     
   def validate(self):
-    if '*' in self.expression or '/' in self.expression or '(' in self.expression or ')' in self.expression:
-      return  # Skip validation for combined expressions
     for term in self.terms:
-      if not re.match(r'^[+-]?(\d*x(\^\d+)?|\d+)$', term):
+      if not re.match(r'^[+-]?(\d*\.?\d*x(\^\d+)?|\d*\.?\d+)$', term):
         raise ValueError(f"Invalid term '{term}' in expression '{self.expression}'. Expression must be a valid polynomial (e.g., 3x + 2, x^2 - 1).")
     
   def get_poly(self):
-    if '*' in self.expression or '/' in self.expression or '(' in self.expression or ')' in self.expression:
-      return Expression.evaluate_expression(self.expression)
-    poly = {}
-    for term in self.terms:
-      if 'x' in term:
-        if '^' in term:
-          parts = term.split('^')
-          coeff_str = parts[0].replace('x', '')
-          degree = int(parts[1])
-        else:
-          coeff_str = term.replace('x', '')
-          degree = term.count('x')
-        if coeff_str == '' or coeff_str == '+':
-          coeff = 1
-        elif coeff_str == '-':
-          coeff = -1
-        else:
-          coeff = int(coeff_str)
-      else:
-        coeff = int(term)
-        degree = 0
-      if degree in poly:
-        poly[degree] += coeff
-      else:
-        poly[degree] = coeff
-    return poly
+    if self.poly is not None:
+      return self.poly
+    else:
+      raise ValueError("Coefficients cannot be extracted from combined expressions.")
   
   @staticmethod
   def poly_to_expr(poly):
     terms = []
     for d in sorted(poly.keys(), reverse=True):
       c = poly[d]
-      if c == 0:
+      if abs(c) < 1e-10:
         continue
+      # Round to int if close
+      if abs(c - round(c)) < 1e-10:
+        c = int(round(c))
       if d == 0:
         terms.append(str(c))
       else:
@@ -212,15 +275,11 @@ class Expression:
     return expr
   
   def get_degree(self):
-    try:
-      poly = self.get_poly()
-      if poly:
-        return max(poly.keys())
-      else:
-        return 0
-    except ValueError:
-      print("Degree cannot be determined for combined expressions.")
-      return None
+    poly = self.get_poly()
+    if poly:
+      return max(poly.keys())
+    else:
+      return 0
   
   def get_coefficients(self):
     try:
@@ -273,7 +332,21 @@ class Expression:
         combined_poly = Expression.evaluate_expression(combined_expr)
         new_expression = Expression.poly_to_expr(combined_poly)
       except:
-        new_expression = combined_expr
+        if self.poly is not None and other.poly is not None:
+          gcd = Expression.gcd_polys(self.poly, other.poly)
+          if gcd and any(abs(c) > 1e-10 for c in gcd.values()) and gcd != {0: 1.0}:
+            q_num, r_num = Expression.div_polys(self.poly, gcd)
+            q_den, r_den = Expression.div_polys(other.poly, gcd)
+            if not r_num and not r_den:
+              num_expr = Expression.poly_to_expr(q_num) if q_num else '0'
+              den_expr = Expression.poly_to_expr(q_den) if q_den else '1'
+              new_expression = f"({num_expr}) / ({den_expr})"
+            else:
+              new_expression = combined_expr
+          else:
+            new_expression = combined_expr
+        else:
+          new_expression = combined_expr
       return Expression(new_expression, prompt=False)
     else:
       raise ValueError("Can only divide by another Expression object.")
