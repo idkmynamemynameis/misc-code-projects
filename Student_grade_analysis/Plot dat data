@@ -1,5 +1,0 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
-data = np.loadtxt('StudentPreformanceData.csv', delimiter=',', skiprows=1)
-# collumns are
