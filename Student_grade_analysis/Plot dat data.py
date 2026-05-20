@@ -82,7 +82,7 @@ def plot_boxplot_by_gender(data):
     plt.show()
 
 
-def plot_average_score_by_parental_education(data):9
+def plot_average_score_by_parental_education(data):
     group = data.groupby('Parental_Education_Level')['Exam_Score'].mean().sort_values()
     plt.figure(figsize=(10, 6))
     plt.bar(group.index, group.values, color='mediumpurple', edgecolor='black')
