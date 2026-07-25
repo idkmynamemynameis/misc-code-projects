@@ -246,7 +246,7 @@ The user wants to know if this movie fits them:
 
 Keep the response below 1500 characters.
 
-Highlight the most relevant movies.
+Highlight the most relevant movies but specifically those rear the top of the list.
 
 Only discuss movies in the provided list.
 Do not add extra movies.
