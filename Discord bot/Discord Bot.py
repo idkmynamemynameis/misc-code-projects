@@ -94,8 +94,9 @@ async def on_ready():
 
     channel = bot.get_channel(1528787719604539415)
 
-    if channel:
-        await channel.send("""
+    if channel: 
+        await channel.send(# pyright: ignore[reportAttributeAccessIssue]
+            """ 
 Rate these movies from 1-5:
 
 1. Toy Story
@@ -267,4 +268,4 @@ Do not change release years.
         )
 
 
-bot.run(DISCORD_TOKEN)
+bot.run(DISCORD_TOKEN) # type: ignore
