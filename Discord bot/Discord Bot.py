@@ -180,12 +180,13 @@ STARTER_MOVIES = {
     357: "One Flew Over the Cuckoo's Nest (1975)",
     483: "Casablanca (1942)",
 }
-
+keys = random.sample(list(STARTER_MOVIES.keys()), 20)
 current_selection={}
 @bot.event
 async def on_ready():
+    global keys
     print(f'Logged in as {bot.user} server')
-    keys = random.sample(list(STARTER_MOVIES.keys()), 20)
+    
     current_selection = {k: STARTER_MOVIES[k] for k in keys}
     channel = bot.get_channel(1528787719604539415)
 
@@ -212,8 +213,8 @@ async def give(
     r11: float, r12: float, r13: float, r14: float, r15: float,
     r16: float, r17: float, r18: float, r19: float, r20: float
 ):
-    global df
-
+    global df, STARTER_MOVIES,keys
+    current_selection = {k: STARTER_MOVIES[k] for k in keys}
     uid = 1000
 
     # Remove previous ratings
@@ -227,7 +228,7 @@ async def give(
     ]
 
     temp_df = pd.DataFrame({
-        "item_id": list(STARTER_MOVIES.keys()),
+        "item_id": list(keys),
         "rating": ratings
     })
 
@@ -246,105 +247,105 @@ async def give(
     await ctx.send("✅ Ratings saved!")
 
 
-# @bot.command()
-# async def recommend(ctx, uid=1000, want_movie=0, raw=0):
+@bot.command()
+async def recommend(ctx, uid=1000, want_movie=0, raw=0):
 
-#     # Train recommendation model
-#     data = Dataset.load_from_df(
-#         df[['user_id', 'item_id', 'rating']],
-#         reader
-#     )
+    # Train recommendation model
+    data = Dataset.load_from_df(
+        df[['user_id', 'item_id', 'rating']],
+        reader
+    )
 
-#     trainset = data.build_full_trainset()
+    trainset = data.build_full_trainset()
 
-#     algo = SVD()
-#     algo.fit(trainset)
-
-
-#     rated_movies = set(
-#         df[df["user_id"] == uid]["item_id"]
-#     )
-
-#     recommendations = []
+    algo = SVD()
+    algo.fit(trainset)
 
 
-#     # Predict every movie
-#     for _, row in df_movie.iterrows():
+    rated_movies = set(
+        df[df["user_id"] == uid]["item_id"]
+    )
 
-#         movie_id = int(row["movie_id"])
-
-#         if movie_id in rated_movies:
-#             continue
-
-#         pred = algo.predict(
-#             uid,
-#             movie_id
-#         )
-
-#         recommendations.append(
-#             (pred.est, row["title"])
-#         )
+    recommendations = []
 
 
-#     recommendations.sort(
-#         key=lambda x: x[0],
-#         reverse=True
-#     )
+    # Predict every movie
+    for _, row in df_movie.iterrows():
 
-#     recommendations = recommendations[:10]
+        movie_id = int(row["movie_id"])
 
+        if movie_id in rated_movies:
+            continue
 
-#     movie_list = "\n".join(
-#         f"⭐ {title}"
-#         for score, title in recommendations
-#     )
+        pred = algo.predict(
+            uid,
+            movie_id
+        )
 
-
-#     if want_movie in df_movie["movie_id"].values:
-
-#         wanted = df_movie.loc[
-#             df_movie["movie_id"] == want_movie,
-#             "title"
-#         ].iloc[0]
-
-#     else:
-#         wanted = "No specific movie requested."
+        recommendations.append(
+            (pred.est, row["title"])
+        )
 
 
-#     response = client.models.generate_content(
-#         model="gemini-3.5-flash-lite",
-#         contents=f"""
-# Write a friendly Discord message explaining why these are good recommendations.
+    recommendations.sort(
+        key=lambda x: x[0],
+        reverse=True
+    )
 
-# Recommended movies:
-
-# {movie_list}
-
-# The user wants to know if this movie fits them:
-# {wanted}
-
-# Keep the response below 1500 characters.
-
-# Highlight the most relevant movies but specifically those rear the top of the list.
-
-# Only discuss movies in the provided list.
-# Do not add extra movies.
-# Use the movie titles exactly as provided.
-# Do not change release years.
-# """
-#     )
+    recommendations = recommendations[:10]
 
 
-#     await ctx.send(response.text)
+    movie_list = "\n".join(
+        f"⭐ {title}"
+        for score, title in recommendations
+    )
 
 
-#     if raw:
-#         await ctx.send(
-#             "\n".join(
-#                 f"{score:.3f} - {title}"
-#                 for score, title in recommendations
-#             )
-#         )
+    if want_movie in df_movie["movie_id"].values:
+
+        wanted = df_movie.loc[
+            df_movie["movie_id"] == want_movie,
+            "title"
+        ].iloc[0]
+
+    else:
+        wanted = "No specific movie requested."
+
+
+    response = client.models.generate_content(
+        model="gemini-3.5-flash-lite",
+        contents=f"""
+Write a friendly Discord message explaining why these are good recommendations.
+
+Recommended movies:
+
+{movie_list}
+
+The user wants to know if this movie fits them:
+{wanted}
+
+Keep the response below 1500 characters.
+
+Highlight the most relevant movies but specifically those rear the top of the list.
+
+Only discuss movies in the provided list.
+Do not add extra movies.
+Use the movie titles exactly as provided.
+Do not change release years.
+"""
+    )
+
+
+    await ctx.send(response.text)
+
+
+    if raw:
+        await ctx.send(
+            "\n".join(
+                f"{score:.3f} - {title}"
+                for score, title in recommendations
+            )
+        )
 
 
 bot.run(DISCORD_TOKEN) # type: ignore
