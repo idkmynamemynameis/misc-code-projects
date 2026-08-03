@@ -1,0 +1,18 @@
+import cv2
+import matplotlib.pyplot as plt
+import sys
+import os
+# print("CWD:", os.getcwd())
+# print("Exists banana.jpg?", os.path.exists("C:/Users/micem/Documents/Code/misc-code-projects/opencv_project1/banana.jpg"))
+
+
+# img=cv2.imread("C:/Users/micem/Documents/Code/misc-code-projects/opencv_project1/banana.jpg")
+# if img is None:
+#     sys.exit("Could not read the image.")
+# cv2.imshow("Display window",img)
+# k=cv2.waitKey(0)
+# if k==ord('s'):
+#     cv2.imwrite('banana.jpg',img)
+
+
+
