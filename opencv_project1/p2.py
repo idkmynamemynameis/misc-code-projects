@@ -11,7 +11,7 @@ while 1:
 
     _,frame = cap.read()
     hsv=cv.cvtColor(frame,cv.COLOR_BGR2HSV)
-    lower_red=np.array([166,150,200])
+    lower_red=np.array([150,140,130])
     upper_red=np.array([255,255,255])
     mask=cv.inRange(hsv,lower_red,upper_red)
     res=cv.bitwise_and(frame,frame,mask=mask)
