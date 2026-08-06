@@ -16,7 +16,7 @@ cv.createTrackbar('B','image',0,255,nothing)
 
 
 drawing=False
-mode= True
+mode= 1
 ix,iy=-1,-1
 def draw_circle(event,x,y,flags,param):
     global ix,iy,drawing,mode
@@ -29,23 +29,26 @@ def draw_circle(event,x,y,flags,param):
         ix,iy=x,y
     elif event == cv.EVENT_MOUSEMOVE:
         if drawing==True:
-            if mode==True:
+            if mode==1:
                 cv.rectangle(img,(ix,iy),(x,y),(b,g,r),-1)
-            else:
+            elif mode==2:
                 cv.circle(img,(x,y),5,(b,g,r),-1)
     elif event == cv.EVENT_LBUTTONUP:
         drawing= False
-        if mode==True:
+        if mode==1:
             cv.rectangle(img,(ix,iy),(x,y),(b,g,r),-1)
-        else:
+        elif mode==2:
             cv.circle(img,(x,y),5,(b,g,r),-1)
+        elif mode==0:
+            cv.line(img,(ix,iy),(x,y),(b,g,r),3)
 cv.namedWindow('image')
 cv.setMouseCallback('image',draw_circle)
 while(1):
     cv.imshow('image',img)
     k = cv.waitKey(1) & 0xFF
     if k == ord('m'):
-        mode = not mode
+        mode += 1
+        mode=mode%3
     elif k == 27:
         cv.imwrite("starry_night.png", img)
         break
