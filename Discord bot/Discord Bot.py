@@ -20,14 +20,12 @@ client = genai.Client(
     api_key=GEMINI_API_KEY
 )
 
+df = pd.read_csv("ratings.csv")
 
-# Load MovieLens dataset
-data = Dataset.load_builtin('ml-100k')
-
-df = pd.DataFrame(
-    data.raw_ratings,
-    columns=['user_id', 'item_id', 'rating', 'timestamp']
-)
+df = df.rename(columns={
+    "userId": "user_id",
+    "movieId": "item_id"
+})
 
 # Ensure correct data types
 df["user_id"] = df["user_id"].astype(int)
@@ -38,15 +36,13 @@ now_utc = datetime.now(timezone.utc)
 now = int(now_utc.timestamp())
 
 
-df_users = pd.read_csv('u.user', sep='|')
+df_movie = pd.read_csv("movies.csv")
 
-df_movie = pd.read_csv(
-    'u_movies.tsv',
-    sep='|',
-    encoding='utf-8'
-)
+df_movie = df_movie.rename(columns={
+    "movieId": "movie_id"
+})
 
-df_movie = df_movie.drop(columns='unknown')
+
 
 
 reader = Reader(rating_scale=(1, 5))
@@ -59,126 +55,60 @@ bot = commands.Bot(
     command_prefix='!',
     intents=intents
 )
-
 STARTER_MOVIES = {
     1: "Toy Story (1995)",
-    2: "GoldenEye (1995)",
-    3: "Four Rooms (1995)",
-    4: "Get Shorty (1995)",
-    5: "Copycat (1995)",
-    6: "Shanghai Triad (1995)",
-    7: "Twelve Monkeys (1995)",
-    8: "Babe (1995)",
-    9: "Dead Man Walking (1995)",
-    10: "Richard III (1995)",
-    11: "Seven (Se7en) (1995)",
-    12: "Usual Suspects, The (1995)",
-    13: "Mighty Aphrodite (1995)",
-    14: "Postino, Il (1994)",
-    15: "Mr. Holland's Opus (1995)",
-    16: "French Twist (1995)",
-    17: "From Dusk Till Dawn (1996)",
-    18: "White Balloon, The (1995)",
-    19: "Antonia's Line (1995)",
-    20: "Angels and Insects (1995)",
-    21: "Muppet Treasure Island (1996)",
-    22: "Braveheart (1995)",
-    23: "Taxi Driver (1976)",
-    24: "Rumble in the Bronx (1995)",
-    25: "Birdcage, The (1996)",
-    26: "Brothers McMullen, The (1995)",
-    27: "Bad Boys (1995)",
-    28: "Apollo 13 (1995)",
-    29: "Batman Forever (1995)",
-    30: "Belle de Jour (1967)",
-    31: "Crimson Tide (1995)",
-    32: "Crumb (1994)",
-    33: "Desperado (1995)",
-    34: "Doom Generation, The (1995)",
-    35: "Free Willy 2 (1995)",
-    36: "Mad Love (1995)",
-    37: "Nadja (1994)",
-    38: "Net, The (1995)",
-    39: "Strange Days (1995)",
-    40: "To Wong Foo, Thanks for Everything! Julie Newmar (1995)",
-    41: "Billy Madison (1995)",
-    42: "Clerks (1994)",
-    43: "Disclosure (1994)",
-    44: "Dolores Claiborne (1994)",
-    45: "Eat Drink Man Woman (1994)",
-    46: "Exotica (1994)",
-    47: "Ed Wood (1994)",
-    48: "Hoop Dreams (1994)",
-    49: "I.Q. (1994)",
-    50: "Star Wars (1977)",
-    51: "Legends of the Fall (1994)",
-    52: "Madness of King George, The (1994)",
-    53: "Natural Born Killers (1994)",
-    54: "Outbreak (1995)",
-    55: "Professional, The / Leon (1994)",
-    56: "Pulp Fiction (1994)",
-    57: "Priest (1994)",
-    58: "Quiz Show (1994)",
-    59: "Three Colors: Red (1994)",
-    60: "Three Colors: Blue (1993)",
-    61: "Three Colors: White (1994)",
-    62: "Stargate (1994)",
-    63: "Santa Clause, The (1994)",
-    64: "Shawshank Redemption, The (1994)",
-    65: "What's Eating Gilbert Grape (1993)",
-    66: "While You Were Sleeping (1995)",
-    67: "Ace Ventura: Pet Detective (1994)",
-    68: "Crow, The (1994)",
-    69: "Forrest Gump (1994)",
-    70: "Four Weddings and a Funeral (1994)",
-    71: "Lion King, The (1994)",
-    72: "Mask, The (1994)",
-    73: "Maverick (1994)",
-    74: "Faster Pussycat! Kill! Kill! (1965)",
-    76: "Carlito's Way (1993)",
-    77: "Firm, The (1993)",
-    78: "Free Willy (1993)",
-    79: "Fugitive, The (1993)",
-    80: "Hot Shots! Part Deux (1993)",
-    81: "Hudsucker Proxy, The (1994)",
-    82: "Jurassic Park (1993)",
-    83: "Much Ado About Nothing (1993)",
-    85: "Ref, The (1994)",
-    86: "Remains of the Day, The (1993)",
-    87: "Searching for Bobby Fischer (1993)",
-    88: "Sleepless in Seattle (1993)",
-    89: "Blade Runner (1982)",
-    90: "So I Married an Axe Murderer (1993)",
-    91: "Nightmare Before Christmas, The (1993)",
-    92: "True Romance (1993)",
-    93: "Welcome to the Dollhouse (1995)",
-    94: "Home Alone (1990)",
-    95: "Aladdin (1992)",
-    96: "Terminator 2: Judgment Day (1991)",
-    97: "Dances with Wolves (1990)",
-    98: "Silence of the Lambs, The (1991)",
-    99: "Snow White and the Seven Dwarfs (1937)",
-    100: "Fargo (1996)",
-    121: "Independence Day (1996)",
-    127: "Godfather, The (1972)",
-    172: "Empire Strikes Back, The (1980)",
-    174: "Raiders of the Lost Ark (1981)",
-    181: "Return of the Jedi (1983)",
-    195: "Terminator, The (1984)",
-    204: "Back to the Future (1985)",
-    210: "Indiana Jones and the Last Crusade (1989)",
-    222: "Star Trek: First Contact (1996)",
-    234: "Jaws (1975)",
-    257: "Men in Black (1997)",
-    269: "Full Monty, The (1997)",
-    288: "Scream (1996)",
-    300: "Air Force One (1997)",
-    302: "L.A. Confidential (1997)",
-    313: "Titanic (1997)",
-    316: "As Good As It Gets (1997)",
-    318: "Schindler's List (1993)",
-    357: "One Flew Over the Cuckoo's Nest (1975)",
-    483: "Casablanca (1942)",
+    2: "Jumanji (1995)",
+    3: "Grumpier Old Men (1995)",
+    6: "Heat (1995)",
+    10: "GoldenEye (1995)",
+    11: "American President, The (1995)",
+    16: "Casino (1995)",
+    17: "Sense and Sensibility (1995)",
+    21: "Get Shorty (1995)",
+    32: "Twelve Monkeys (1995)",
+    34: "Babe (1995)",
+    47: "Seven (Se7en) (1995)",
+    50: "Usual Suspects, The (1995)",
+    62: "Mr. Holland's Opus (1995)",
+    65: "Bio-Dome (1996)",
+    95: "Broken Arrow (1996)",
+    110: "Braveheart (1995)",
+    150: "Apollo 13 (1995)",
+    260: "Star Wars: Episode IV - A New Hope (1977)",
+    296: "Pulp Fiction (1994)",
+    318: "Shawshank Redemption, The (1994)",
+    356: "Forrest Gump (1994)",
+    364: "Lion King, The (1994)",
+    480: "Jurassic Park (1993)",
+    527: "Schindler's List (1993)",
+    541: "Blade Runner (1982)",
+    589: "Terminator 2: Judgment Day (1991)",
+    593: "Silence of the Lambs, The (1991)",
+    608: "Fargo (1996)",
+    858: "Godfather, The (1972)",
+    904: "Rear Window (1954)",
+    912: "Casablanca (1942)",
+    919: "Wizard of Oz, The (1939)",
+    923: "Citizen Kane (1941)",
+    1089: "Reservoir Dogs (1992)",
+    1196: "Star Wars: Episode V - The Empire Strikes Back (1980)",
+    1198: "Raiders of the Lost Ark (1981)",
+    1210: "Star Wars: Episode VI - Return of the Jedi (1983)",
+    1213: "Goodfellas (1990)",
+    1221: "Godfather: Part II, The (1974)",
+    1222: "Full Metal Jacket (1987)",
+    1240: "Terminator, The (1984)",
+    1270: "Back to the Future (1985)",
+    1356: "Star Trek: First Contact (1996)",
+    1580: "Men in Black (1997)",
+    1721: "Titanic (1997)",
+    2028: "Saving Private Ryan (1998)",
+    2571: "Matrix, The (1999)",
+    2858: "American Beauty (1999)",
+    2959: "Fight Club (1999)",
+    4993: "Lord of the Rings: The Fellowship of the Ring (2001)",
+    5952: "Lord of the Rings: The Two Towers (2002)",
+    7153: "Lord of the Rings: The Return of the King (2003)"
 }
 keys = random.sample(list(STARTER_MOVIES.keys()), 20)
 current_selection={}
@@ -320,9 +250,6 @@ async def recommend(ctx, raw=0, uid=1000, want_movie=0):
     Recommended movies:
 
     {recommendations}
-
-    The user wants to know if this movie fits them:
-    {wanted}
 
     Keep the response below 1500 characters.
 
