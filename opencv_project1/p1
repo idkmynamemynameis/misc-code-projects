@@ -7,7 +7,7 @@ import numpy as np
 def nothing(x):
     pass
 
-img=np.zeros((512,1024,3),np.uint8)
+img=np.zeros((768,1536,3),np.uint8)
 cv.namedWindow('image')
 cv.createTrackbar('R','image',0,255,nothing)
 cv.createTrackbar('G','image',0,255,nothing)
@@ -18,8 +18,9 @@ cv.createTrackbar('B','image',0,255,nothing)
 drawing=False
 mode= 1
 ix,iy=-1,-1
+text=''
 def draw_circle(event,x,y,flags,param):
-    global ix,iy,drawing,mode
+    global ix,iy,drawing,mode,text
     r=cv.getTrackbarPos('R','image')
     g=cv.getTrackbarPos('G','image')
     b=cv.getTrackbarPos('B','image')
@@ -27,12 +28,16 @@ def draw_circle(event,x,y,flags,param):
     if event == cv.EVENT_LBUTTONDOWN:
         drawing=True
         ix,iy=x,y
+        if mode ==1:
+            text='Rectangle'
+        elif mode==2:
+            text='Circle'
+        else:
+            text='Line'
     elif event == cv.EVENT_MOUSEMOVE:
-        if drawing==True:
-            if mode==1:
-                cv.rectangle(img,(ix,iy),(x,y),(b,g,r),-1)
-            elif mode==2:
-                cv.circle(img,(x,y),5,(b,g,r),-1)
+             
+             if mode==2 and drawing:
+                 cv.circle(img,(x,y),5,(b,g,r),-1)
     elif event == cv.EVENT_LBUTTONUP:
         drawing= False
         if mode==1:
@@ -40,11 +45,16 @@ def draw_circle(event,x,y,flags,param):
         elif mode==2:
             cv.circle(img,(x,y),5,(b,g,r),-1)
         elif mode==0:
-            cv.line(img,(ix,iy),(x,y),(b,g,r),3)
+            cv.line(img,(ix,iy),(x,y),(b,g,r),4)
 cv.namedWindow('image')
 cv.setMouseCallback('image',draw_circle)
 while(1):
-    cv.imshow('image',img)
+    canvas = img.copy()
+    cv.putText(canvas, text, (50, 50),
+               cv.FONT_HERSHEY_SIMPLEX, 1.0,
+               (0, 255, 0), 2, cv.LINE_AA)
+
+    cv.imshow('image', canvas)
     k = cv.waitKey(1) & 0xFF
     if k == ord('m'):
         mode += 1
