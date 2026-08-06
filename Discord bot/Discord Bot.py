@@ -248,7 +248,7 @@ async def give(
 
 
 @bot.command()
-async def recommend(ctx, uid=1000, want_movie=0, raw=0):
+async def recommend(ctx, raw=0, uid=1000, want_movie=0):
 
     # Train recommendation model
     data = Dataset.load_from_df(
@@ -311,32 +311,34 @@ async def recommend(ctx, uid=1000, want_movie=0, raw=0):
     else:
         wanted = "No specific movie requested."
 
+    if not raw:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=f"""
+    Write a friendly Discord message explaining why these are good recommendations.
 
-    response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
-        contents=f"""
-Write a friendly Discord message explaining why these are good recommendations.
+    Recommended movies:
 
-Recommended movies:
+    {recommendations}
 
-{movie_list}
+    The user wants to know if this movie fits them:
+    {wanted}
 
-The user wants to know if this movie fits them:
-{wanted}
+    Keep the response below 1500 characters.
 
-Keep the response below 1500 characters.
+    Highlight the most relevant movies but specifically those rear the top of the list.
 
-Highlight the most relevant movies but specifically those rear the top of the list.
-
-Only discuss movies in the provided list.
-Do not add extra movies.
-Use the movie titles exactly as provided.
-Do not change release years.
-"""
-    )
+    Only discuss movies in the provided list.
+    Do not add extra movies.
+    Use the movie titles exactly as provided.
+    Do not change release years.
+    """
+        )
 
 
-    await ctx.send(response.text)
+        await ctx.send(response.text)
+        
+
 
 
     if raw:
@@ -344,6 +346,7 @@ Do not change release years.
             "\n".join(
                 f"{score:.3f} - {title}"
                 for score, title in recommendations
+
             )
         )
 
