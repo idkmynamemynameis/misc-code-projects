@@ -42,6 +42,7 @@ while 1:
     cv.imshow('control',img)
     k = cv.waitKey(5) & 0xFF
     if k == 27:
+        cv.imwrite("starry_night.png", mask)
         break
 
 cv.destroyAllWindows()
