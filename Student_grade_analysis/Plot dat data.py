@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-DATA_PATH = 'StudentPerformanceFactors.csv'
+DATA_PATH = "Student_grade_analysis/StudentPerformanceFactors.csv"
+
 
 
 def plot_regression_lines(data):
@@ -71,7 +72,7 @@ def plot_boxplot_by_gender(data):
     scores_by_gender = [data.loc[data['Gender'] == gender, 'Exam_Score'] for gender in categories]
 
     plt.figure(figsize=(8, 6))
-    plt.boxplot(scores_by_gender, labels=categories, patch_artist=True,
+    plt.boxplot(scores_by_gender, label=categories, patch_artist=True,
                 boxprops=dict(facecolor='lightgreen', color='black'),
                 medianprops=dict(color='firebrick'))
     plt.title('Exam Score Distribution by Gender')
@@ -82,9 +83,9 @@ def plot_boxplot_by_gender(data):
     plt.show()
 
 
-def plot_average_score_by_parental_education(data):9
+def plot_average_score_by_parental_education(data):
     group = data.groupby('Parental_Education_Level')['Exam_Score'].mean().sort_values()
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(5, 10))
     plt.bar(group.index, group.values, color='mediumpurple', edgecolor='black')
     plt.title('Average Exam Score by Parental Education Level')
     plt.xlabel('Parental Education Level')
