@@ -12,40 +12,60 @@ windll.shcore.SetProcessDpiAwareness(1)
 
 #init
 root = tk.Tk()
-def funct():
-    showinfo(
-        title='Test title',
-        message=str(counter),
-        
-    )
-
-
-
+# Wait 3 seconds without freezing
 
 #set counter
-counter=0
+
+def reset():
+    global counter,reset_button,btn
+    counter=100
+    btn.config(state='normal')
+    reset_button.config(state='disabled')
+    counterstring.set('Counter = '+str(counter))
+reset_button=tk.Button(
+    root,
+    text='Set counter to 100',
+    command=reset
+
+)
+
+reset_button.config(state='disabled')
+reset_button.pack()
+counter=100
 def add_one():
-    global counter
-    counter+=np.random.randint(1,5)
-    counterstring.set('counter: '+str(counter))
+    global counter, btn
+    turn_on=True
+    #change counter
+    counter-=np.random.randint(1,100)
+    if counter < 0:
+        counter=0
+        turn_on=False
+    if counter == 0:
+        reset_button.config(state='normal')
+    
+    #update string
+    counterstring.set('Counter = '+str(counter))
+    
+    #disable
+    btn.config(state="disabled")
+    
+    #wait
+    if turn_on:
+        root.after(300, lambda: btn.config(state="normal"))
+    
     return
 
 
 
-#make button
-ttk.Button(
-   root, 
-   text="Click Me", 
-   command=funct
-).pack()
-
+btn=tk.Button(root,text='Minus 1-100',command=add_one)
+btn.pack()
 
 #make strvar
 counterstring=tk.StringVar()
-counterstring.set(str(counter))
+counterstring.set('Counter = '+str(counter))
 
-ttk.Button(root,text='Add one',command=add_one).pack()
-clabel=ttk.Label(root, textvariable=counterstring).pack()
+
+label=ttk.Label(root, textvariable=counterstring).pack()
 
 
 
