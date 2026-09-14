@@ -12,31 +12,38 @@ windll.shcore.SetProcessDpiAwareness(1)
 
 #init
 root = tk.Tk()
-# Wait 3 seconds without freezing
-
 #set counter
+counter_max=1000
+counter=1000
+minus_minimum=1
+minus_maximum=500
+quarter_threshold=counter_max/4
+half_threshold=counter_max/2
+three_quarters_threshold=(counter_max/4)*3
 
 def reset():
     global counter,reset_button,btn
-    counter=100
+    counter=counter_max
     btn.config(state='normal')
     reset_button.config(state='disabled')
-    counterstring.set('Counter = '+str(counter))
+    #counterstring.set('Counter = '+str(counter))
+    statusstring.set('status: good')
+
 reset_button=tk.Button(
     root,
-    text='Set counter to 100',
+    text='Set counter to '+str(counter),
     command=reset
 
 )
-
+g=tk.Grid()
 reset_button.config(state='disabled')
 reset_button.pack()
-counter=100
+
 def add_one():
     global counter, btn
     turn_on=True
     #change counter
-    counter-=np.random.randint(1,100)
+    counter-=np.random.randint(minus_minimum,minus_maximum)
     if counter < 0:
         counter=0
         turn_on=False
@@ -44,8 +51,17 @@ def add_one():
         reset_button.config(state='normal')
     
     #update string
-    counterstring.set('Counter = '+str(counter))
-    
+    #counterstring.set('Counter = '+str(counter))
+    status=''
+    if counter >= three_quarters_threshold:
+        status='good'
+    elif counter >= half_threshold:
+        status='okay'
+    elif counter >= quarter_threshold:
+        status='meh'
+    else:
+        status='bad'
+    statusstring.set('status: '+status)
     #disable
     btn.config(state="disabled")
     
@@ -57,16 +73,20 @@ def add_one():
 
 
 
-btn=tk.Button(root,text='Minus 1-100',command=add_one)
+btn=tk.Button(root,text='Minus '+str(minus_minimum)+' - '+str(minus_maximum),command=add_one)
 btn.pack()
 
 #make strvar
-counterstring=tk.StringVar()
-counterstring.set('Counter = '+str(counter))
+#counterstring=tk.StringVar()
+#counterstring.set('Counter = '+str(counter))
+statusstring=tk.StringVar()
 
+statusstring.set('status: good')
 
-label=ttk.Label(root, textvariable=counterstring).pack()
-
+#label=ttk.Label(root, textvariable=counterstring)
+#label.pack()
+status_label=ttk.Label(root, textvariable=statusstring)
+status_label.pack()
 
 
 root.mainloop()
