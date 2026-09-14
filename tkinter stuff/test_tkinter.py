@@ -52,6 +52,26 @@ def add_one():
     
     #update string
     #counterstring.set('Counter = '+str(counter))
+    update_status()
+    """    status=''
+    if counter >= three_quarters_threshold:
+        status='good'
+    elif counter >= half_threshold:
+        status='okay'
+    elif counter >= quarter_threshold:
+        status='meh'
+    else:
+        status='bad'"""
+    
+    #disable
+    btn.config(state="disabled")
+    
+    #wait
+    if turn_on:
+        root.after(300, lambda: btn.config(state="normal"))
+    
+    return
+def update_status():
     status=''
     if counter >= three_quarters_threshold:
         status='good'
@@ -62,15 +82,7 @@ def add_one():
     else:
         status='bad'
     statusstring.set('status: '+status)
-    #disable
-    btn.config(state="disabled")
-    
-    #wait
-    if turn_on:
-        root.after(300, lambda: btn.config(state="normal"))
-    
-    return
-
+    return 
 
 
 btn=tk.Button(root,text='Minus '+str(minus_minimum)+' - '+str(minus_maximum),command=add_one)
