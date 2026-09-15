@@ -14,8 +14,8 @@ windll.shcore.SetProcessDpiAwareness(1)
 root = tk.Tk()
 #set counter
 counter_max=1000
-counter=1000
-minus_minimum=1
+counter=counter_max
+minus_minimum=400
 minus_maximum=500
 quarter_threshold=counter_max/4
 half_threshold=counter_max/2
@@ -53,16 +53,6 @@ def add_one():
     #update string
     #counterstring.set('Counter = '+str(counter))
     update_status()
-    """    status=''
-    if counter >= three_quarters_threshold:
-        status='good'
-    elif counter >= half_threshold:
-        status='okay'
-    elif counter >= quarter_threshold:
-        status='meh'
-    else:
-        status='bad'"""
-    
     #disable
     btn.config(state="disabled")
     
@@ -71,6 +61,10 @@ def add_one():
         root.after(300, lambda: btn.config(state="normal"))
     
     return
+
+
+
+
 def update_status():
     status=''
     if counter >= three_quarters_threshold:
