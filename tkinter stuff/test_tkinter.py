@@ -51,7 +51,7 @@ def add_one():
         reset_button.config(state='normal')
     
     #update string
-    #counterstring.set('Counter = '+str(counter))
+
     update_status()
     #disable
     btn.config(state="disabled")
@@ -73,8 +73,11 @@ def update_status():
         status='okay'
     elif counter >= quarter_threshold:
         status='meh'
+    elif counter == 0:
+        status='dead'
     else:
         status='bad'
+
     statusstring.set('status: '+status)
     return 
 
@@ -83,8 +86,6 @@ btn=tk.Button(root,text='Minus '+str(minus_minimum)+' - '+str(minus_maximum),com
 btn.pack()
 
 #make strvar
-#counterstring=tk.StringVar()
-#counterstring.set('Counter = '+str(counter))
 statusstring=tk.StringVar()
 
 statusstring.set('status: good')
