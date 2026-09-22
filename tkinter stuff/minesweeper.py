@@ -81,7 +81,7 @@ def check_around(x,y,clicked=False):
     elif tot_bombs == 4:
         buttons[x][y].config(image=four_icon)
     if nchecked == (x_len*y_len)-nbombs:
-        buttons[x][y].config(image=empty_icon)
+        check_around(x,y)
         response = tkinter.messagebox.askyesno("You Won", " You won!\n Do you want to replay?", icon='question')
         if response==YES:
             make_board()
