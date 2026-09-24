@@ -98,12 +98,13 @@ def check_around(x,y,clicked=False):
 def flag(event):
     x,y=event.x_root,event.y_root
     widget=root.winfo_containing(x,y)
-    if not widget.flagged:
-        widget.config(image=flag_icon) # type: ignore
-        widget.flagged=1
-    elif widget.flagged:
+    widget.config(image=flag_icon) # type: ignore
+    if widget.flagged==1:
         widget.config(image=full_icon) # type: ignore
         widget.flagged=0
+    elif widget.flagged==0:
+        widget.config(image=flag_icon) # type: ignore
+        widget.flagged=1
 
 
             
