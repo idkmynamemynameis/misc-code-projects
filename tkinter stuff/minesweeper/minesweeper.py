@@ -4,8 +4,8 @@ from tkinter import * # type: ignore
 import random as rand
 import tkinter.messagebox 
 #init config
-x_len=7
-y_len=5
+x_len=10
+y_len=8
 #init tk stuff
 root = Tk()
 frame = Frame(root)
@@ -16,25 +16,30 @@ grid = Frame(frame)
 grid.grid(sticky="news", column=0, row=x_len, columnspan=2)
 frame.rowconfigure(x_len, weight=1)
 frame.columnconfigure(0, weight=1)
+
 #grabs icons
-empty_icon=PhotoImage(file='./tkinter stuff/clicked-.png')
-full_icon = PhotoImage(file='./tkinter stuff/unclicked.png')
-bomb_icon=PhotoImage(file='./tkinter stuff/bomb.png')
-one_icon=PhotoImage(file='./tkinter stuff/1.png')
-two_icon=PhotoImage(file='./tkinter stuff/2.png')
-three_icon=PhotoImage(file='./tkinter stuff/3.png')
-four_icon=PhotoImage(file='./tkinter stuff/3.png')
+empty_icon=PhotoImage(file='./tkinter stuff/minesweeper/Clicked_.png')
+
+full_icon = PhotoImage(file='./tkinter stuff/minesweeper/unclicked.png')
+bomb_icon=PhotoImage(file='./tkinter stuff/minesweeper/bomb.png')
+one_icon=PhotoImage(file='./tkinter stuff/minesweeper/1.png')
+two_icon=PhotoImage(file='./tkinter stuff/minesweeper/2.png')
+three_icon=PhotoImage(file='./tkinter stuff/minesweeper/3.png')
+four_icon=PhotoImage(file='./tkinter stuff/minesweeper/4.png')
+flag_icon=PhotoImage(file='./tkinter stuff/minesweeper/flag.png')
 #magically look around
 nchecked=0
 def check_around(x,y,clicked=False):
     global nbombs,nchecked
+    
     if not (0 <= x < x_len and 0 <=y < y_len):
-         print('oob')
+
          return
     if buttons[x][y].checked==1:
-        print('checked')
         return
     button=buttons[x][y]
+    if button.flagged==1:
+        return
     if  str(button.winfo_name()).startswith('n'):
         if clicked:
             buttons[x][y].config(image=bomb_icon)
@@ -90,7 +95,17 @@ def check_around(x,y,clicked=False):
             root.destroy()
             return
 
-        
+def flag(event):
+    x,y=event.x_root,event.y_root
+    widget=root.winfo_containing(x,y)
+    if not widget.flagged:
+        widget.config(image=flag_icon) # type: ignore
+        widget.flagged=1
+    elif widget.flagged:
+        widget.config(image=full_icon) # type: ignore
+        widget.flagged=0
+
+
             
 
 
@@ -120,10 +135,11 @@ def make_board():
             #make button
             btn = Button(frame,image=icon,name=name,command=lambda x=x,y=y,t=True:check_around(x,y,t))
             btn.checked=0 # type: ignore
+            btn.flagged=0 #type: ignore
             #add button to array
             buttons[x].append(btn)
             #add button to screen
-            print(btn.winfo_name())
+            btn.bind('<Button-3>',flag)
             btn.grid(column=x, row=y, sticky="news")
 
     frame.columnconfigure(tuple(range(y_len)), weight=1)
