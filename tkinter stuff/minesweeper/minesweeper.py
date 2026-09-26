@@ -6,6 +6,8 @@ import tkinter.messagebox
 #init config
 x_len=10
 y_len=8
+mine_max_chance=15 #higher values mean lower chance
+mineminthreshold=1 #higher values mena higher chance
 #init tk stuff
 root = Tk()
 frame = Frame(root)
@@ -26,6 +28,8 @@ one_icon=PhotoImage(file='./tkinter stuff/minesweeper/1.png')
 two_icon=PhotoImage(file='./tkinter stuff/minesweeper/2.png')
 three_icon=PhotoImage(file='./tkinter stuff/minesweeper/3.png')
 four_icon=PhotoImage(file='./tkinter stuff/minesweeper/4.png')
+five_icon=PhotoImage(file='./tkinter stuff/minesweeper/5.png')
+six_icon=PhotoImage(file='./tkinter stuff/minesweeper/6.png')
 flag_icon=PhotoImage(file='./tkinter stuff/minesweeper/flag.png')
 #magically look around
 nchecked=0
@@ -85,6 +89,10 @@ def check_around(x,y,clicked=False):
         buttons[x][y].config(image=three_icon)
     elif tot_bombs == 4:
         buttons[x][y].config(image=four_icon)
+    elif tot_bombs == 5:
+        buttons[x][y].config(image=five_icon)
+    elif tot_bombs == 6:
+        buttons[x][y].config(image=six_icon)
     if nchecked == (x_len*y_len)-nbombs:
         check_around(x,y)
         response = tkinter.messagebox.askyesno("You Won", " You won!\n Do you want to replay?", icon='question')
@@ -99,12 +107,12 @@ def flag(event):
     x,y=event.x_root,event.y_root
     widget=root.winfo_containing(x,y)
     widget.config(image=flag_icon) # type: ignore
-    if widget.flagged==1:
+    if widget.flagged==1: # type: ignore
         widget.config(image=full_icon) # type: ignore
-        widget.flagged=0
-    elif widget.flagged==0:
+        widget.flagged=0 # type: ignore
+    elif widget.flagged==0: # type: ignore
         widget.config(image=flag_icon) # type: ignore
-        widget.flagged=1
+        widget.flagged=1 # type: ignore
 
 
             
@@ -126,7 +134,7 @@ def make_board():
             
             id+=1
             #pick a name
-            if not rand.randint(0,10):
+            if  rand.randint(0,mine_max_chance) < mineminthreshold:
                 icon=full_icon
                 name='not safe'+str(id)
                 nbombs+=1
