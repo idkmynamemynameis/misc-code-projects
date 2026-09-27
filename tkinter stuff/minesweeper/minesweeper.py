@@ -1,13 +1,13 @@
 
 from tkinter import * # type: ignore
-
+import datetime as dt
 import random as rand
 import tkinter.messagebox 
 #init config
-x_len=10
+x_len=15
 y_len=8
-mine_max_chance=15 #higher values mean lower chance
-mineminthreshold=1 #higher values mena higher chance
+mine_max_chance=50 #higher values mean lower chance
+mineminthreshold=5 #higher values mena higher chance
 #init tk stuff
 root = Tk()
 frame = Frame(root)
@@ -21,7 +21,6 @@ frame.columnconfigure(0, weight=1)
 
 #grabs icons
 empty_icon=PhotoImage(file='./tkinter stuff/minesweeper/Clicked_.png')
-
 full_icon = PhotoImage(file='./tkinter stuff/minesweeper/unclicked.png')
 bomb_icon=PhotoImage(file='./tkinter stuff/minesweeper/bomb.png')
 one_icon=PhotoImage(file='./tkinter stuff/minesweeper/1.png')

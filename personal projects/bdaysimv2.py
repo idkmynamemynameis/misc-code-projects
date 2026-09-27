@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy.random as rand
+import numpy as np
 batch_len=50
 batch_size_per_batch=100
 def run_test(size):
@@ -19,9 +20,13 @@ def run_all_tests(itters,batch_size):
             if run_test(size):
                 results[size]+=1
         results[size]/=itters
+
         print(str(size)+' '+str(results[size]))
     return results
-print(run_all_tests(10000,30))
 
-
+results=run_all_tests(10000,50)
+y=list(results.items())
+y=[y for x,y in y]
+plt.plot(y)
+plt.show()
 
