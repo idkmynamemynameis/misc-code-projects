@@ -46,6 +46,7 @@ def check_around(x,y,clicked=False):
     if  str(button.winfo_name()).startswith('n'):
         if nchecked <= 5:
             make_board()
+            check_around(x,y,False)
             return
         if clicked:
             buttons[x][y].config(image=bomb_icon)
