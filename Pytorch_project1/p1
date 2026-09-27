@@ -1,3 +1,0 @@
-import torch as to
-a=to.rand(3,5)
-print(to.builtins)
