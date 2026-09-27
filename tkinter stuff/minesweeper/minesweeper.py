@@ -4,9 +4,9 @@ import datetime as dt
 import random as rand
 import tkinter.messagebox 
 #init config
-x_len=15
-y_len=8
-mine_max_chance=50 #higher values mean lower chance
+x_len=5
+y_len=5
+mine_max_chance=20 #higher values mean lower chance
 mineminthreshold=5 #higher values mena higher chance
 #init tk stuff
 root = Tk()
@@ -15,7 +15,7 @@ root.rowconfigure(0, weight=1)
 root.columnconfigure(0, weight=1)
 frame.grid(row=0, column=0, sticky="news")
 grid = Frame(frame)
-grid.grid(sticky="news", column=0, row=x_len, columnspan=2)
+grid.grid(sticky="news", column=0, row=x_len, columnspan=1)
 frame.rowconfigure(x_len, weight=1)
 frame.columnconfigure(0, weight=1)
 
@@ -33,8 +33,8 @@ flag_icon=PhotoImage(file='./tkinter stuff/minesweeper/flag.png')
 #magically look around
 nchecked=0
 def check_around(x,y,clicked=False):
-    global nbombs,nchecked
     
+    global nbombs,nchecked
     if not (0 <= x < x_len and 0 <=y < y_len):
 
          return
@@ -44,6 +44,9 @@ def check_around(x,y,clicked=False):
     if button.flagged==1:
         return
     if  str(button.winfo_name()).startswith('n'):
+        if nchecked <= 5:
+            make_board()
+            return
         if clicked:
             buttons[x][y].config(image=bomb_icon)
             response = tkinter.messagebox.askyesno("Game Over", " You Lost\n Do you want to replay?", icon='warning')
@@ -58,7 +61,7 @@ def check_around(x,y,clicked=False):
     else:
         nchecked+=1
     
-
+    
     tot_bombs=0
     #rest of code
     for ax in [-1,0,1]:
@@ -105,10 +108,14 @@ def check_around(x,y,clicked=False):
 def flag(event):
     x,y=event.x_root,event.y_root
     widget=root.winfo_containing(x,y)
+    assert widget is not None
+    if widget.checked ==1:#type: ignore
+        return
     widget.config(image=flag_icon) # type: ignore
     if widget.flagged==1: # type: ignore
-        widget.config(image=full_icon) # type: ignore
+        widget.config(image=full_icon) #type: ignore
         widget.flagged=0 # type: ignore
+        widget.checked=0 #type: ignore
     elif widget.flagged==0: # type: ignore
         widget.config(image=flag_icon) # type: ignore
         widget.flagged=1 # type: ignore
@@ -135,11 +142,11 @@ def make_board():
             #pick a name
             if  rand.randint(0,mine_max_chance) < mineminthreshold:
                 icon=full_icon
-                name='not safe'+str(id)
+                name='not safe'+str(id)+', '+str(x)+', '+str(y)
                 nbombs+=1
             else:
                 icon=full_icon
-                name='safe'+str(id)
+                name='safe'+str(id)+', '+str(x)+', '+str(y)
             #make button
             btn = Button(frame,image=icon,name=name,command=lambda x=x,y=y,t=True:check_around(x,y,t))
             btn.checked=0 # type: ignore
