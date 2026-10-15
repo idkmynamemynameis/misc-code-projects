@@ -4,10 +4,10 @@ import datetime as dt
 import random as rand
 import tkinter.messagebox 
 #init config
-x_len=5
-y_len=5
+x_len=8
+y_len=8
 mine_max_chance=20 #higher values mean lower chance
-mineminthreshold=5 #higher values mena higher chance
+mineminthreshold=4 #higher values mena higher chance
 #init tk stuff
 root = Tk()
 frame = Frame(root)
@@ -19,22 +19,33 @@ grid.grid(sticky="news", column=0, row=x_len, columnspan=1)
 frame.rowconfigure(x_len, weight=1)
 frame.columnconfigure(0, weight=1)
 
-#grabs icons
-empty_icon=PhotoImage(file='./tkinter stuff/minesweeper/Clicked_.png')
-full_icon = PhotoImage(file='./tkinter stuff/minesweeper/unclicked.png')
-bomb_icon=PhotoImage(file='./tkinter stuff/minesweeper/bomb.png')
-one_icon=PhotoImage(file='./tkinter stuff/minesweeper/1.png')
-two_icon=PhotoImage(file='./tkinter stuff/minesweeper/2.png')
-three_icon=PhotoImage(file='./tkinter stuff/minesweeper/3.png')
-four_icon=PhotoImage(file='./tkinter stuff/minesweeper/4.png')
-five_icon=PhotoImage(file='./tkinter stuff/minesweeper/5.png')
-six_icon=PhotoImage(file='./tkinter stuff/minesweeper/6.png')
-flag_icon=PhotoImage(file='./tkinter stuff/minesweeper/flag.png')
+'''
+empty_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/Clicked_.png')
+full_icon = PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff//unclicked.png')
+bomb_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/bomb.png')
+one_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/1.png')
+two_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/2.png')
+three_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/3.png')
+four_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/4.png')
+five_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/5.png')
+six_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/6.png')
+flag_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/ flag.png')
+'''
+empty_icon=PhotoImage(file='./Clicked_.png')
+full_icon = PhotoImage(file='./unclicked.png')
+bomb_icon=PhotoImage(file='./bomb.png')
+one_icon=PhotoImage(file='./1.png')
+two_icon=PhotoImage(file='./2.png')
+three_icon=PhotoImage(file='./3.png')
+four_icon=PhotoImage(file='./4.png')
+five_icon=PhotoImage(file='./5.png')
+six_icon=PhotoImage(file='./6.png')
+flag_icon=PhotoImage(file='./flag.png')
 #magically look around
 nchecked=0
 def check_around(x,y,clicked=False):
     
-    global nbombs,nchecked
+    global nbombs,nchecked,buttons
     if not (0 <= x < x_len and 0 <=y < y_len):
 
          return
@@ -96,6 +107,8 @@ def check_around(x,y,clicked=False):
         buttons[x][y].config(image=five_icon)
     elif tot_bombs == 6:
         buttons[x][y].config(image=six_icon)
+    else:
+        buttons[x][y].config(image=bomb_icon)
     if nchecked == (x_len*y_len)-nbombs:
         check_around(x,y)
         response = tkinter.messagebox.askyesno("You Won", " You won!\n Do you want to replay?", icon='question')
@@ -123,7 +136,7 @@ def flag(event):
 
 
             
-
+buttons=[[] for _ in range(x_len)]
 
 def clear_buttons():
     global buttons
@@ -134,6 +147,7 @@ def make_board():
     global nbombs,nchecked
     clear_buttons()
     #make the buttons
+    global buttons
     nbombs,nchecked=0,0
     id=0
     for x in range(x_len):
