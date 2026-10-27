@@ -19,28 +19,19 @@ grid.grid(sticky="news", column=0, row=x_len, columnspan=1)
 frame.rowconfigure(x_len, weight=1)
 frame.columnconfigure(0, weight=1)
 
-'''
-empty_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/Clicked_.png')
-full_icon = PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff//unclicked.png')
-bomb_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/bomb.png')
-one_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/1.png')
-two_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/2.png')
-three_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/3.png')
-four_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/4.png')
-five_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/5.png')
-six_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/6.png')
-flag_icon=PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/ flag.png')
-'''
-empty_icon=PhotoImage(file='./Clicked_.png')
-full_icon = PhotoImage(file='./unclicked.png')
-bomb_icon=PhotoImage(file='./bomb.png')
-one_icon=PhotoImage(file='./1.png')
-two_icon=PhotoImage(file='./2.png')
-three_icon=PhotoImage(file='./3.png')
-four_icon=PhotoImage(file='./4.png')
-five_icon=PhotoImage(file='./5.png')
-six_icon=PhotoImage(file='./6.png')
-flag_icon=PhotoImage(file='./flag.png')
+
+empty_icon=PhotoImage(file='./tkinter stuff/minesweeper/Clicked_.png')
+
+full_icon = PhotoImage(file='C:/Users/micem/Documents/Code/misc-code-projects/tkinter stuff/minesweeper/unclicked.png')
+bomb_icon=PhotoImage(file='./tkinter stuff/minesweeper/bomb.png')
+one_icon=PhotoImage(file='./tkinter stuff/minesweeper/1.png')
+two_icon=PhotoImage(file='./tkinter stuff/minesweeper/2.png')
+three_icon=PhotoImage(file='./tkinter stuff/minesweeper/3.png')
+four_icon=PhotoImage(file='./tkinter stuff/minesweeper/4.png')
+five_icon=PhotoImage(file='./tkinter stuff/minesweeper/5.png')
+six_icon=PhotoImage(file='./tkinter stuff/minesweeper/6.png')
+flag_icon=PhotoImage(file='./tkinter stuff/minesweeper/flag.png')
+
 #magically look around
 nchecked=0
 def check_around(x,y,clicked=False):
